@@ -1107,7 +1107,7 @@ class Project {
                 script.push("rule asm");
                 script.push("    depfile = $out.d");
                 script.push("    deps = gcc");
-                script.push("    command = $asm_exe $flags $includes -l \"$dbg_out\" -o $out $in");
+                script.push("    command = $asm_exe $flags $includes -L \"$dbg_out\" -o $out $in");
                 script.push("");
     
                 buildTree.gen.forEach((to, from) => {
