@@ -9,11 +9,15 @@
 			"include": "#acme"
 		},
 		{
+			"include": "#64tass"
+		},
+		{
 			"include": "#llvm"
 		},
 		{
 			"include": "#kick"
 		}
+		
 	],
 
 	"repository": {
@@ -386,6 +390,22 @@
 				{
 					"name": "keyword.instructions",
 					"match": "\\.(?i)[\\s]*\\b(endm)\\b"
+				}
+			]
+		},
+
+		"64tass": {
+			"patterns": [
+				{
+					"include": "#64tass-directives"
+				}
+			]
+		},
+		"64tass-directives": {
+			"patterns": [
+				{
+					"name": "keyword.instructions",
+					"match": "\\.(?i)[\\s]*\\b(addr|al|align|alignblk|alignind|alignpageind|as|assert|autsiz|bend|binary|binclude|bfor|block|break|breakif|brept|bwhile|byte|case|cdef|cerror|char|check|comment|continue|continueif|cpu|cwarn|databank|default|dint|dpage|dsection|dstruct|dunion|dword|edef|elif|else|elsif|enc|encode|end|endblock|endc|endalignblk|endcomment|endencode|endf|endfor|endfunction|endif|endlogical|endm|endmacro|endn|endnamespace|endp|endpage|endproc|endrept|ends|endsection|endsegment|endstruct|endswitch|endu|endunion|endv|endvirtual|endweak|endwhile|endwith|eor|error|fi|fill|for|from|function|goto|here|hidemac|if|ifeq|ifmi|ifne|ifpl|include|lbl|lint|logical|long|macro|mansiz|namespace|next|null|offs|option|page|pend|proc|proff|pron|ptext|rept|rta|section|seed|segment|send|sfunction|shift|shiftl|showmac|sint|struct|switch|tdef|text|union|var|virtual|warn|weak|while|with|word|xl|xs)\\b"
 				}
 			]
 		}

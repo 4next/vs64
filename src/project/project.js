@@ -157,6 +157,8 @@ class Project {
             this._outdebug = path.resolve(this._builddir, this._name + ".dbg");
         } else if (toolkit.isBasic) {
             this._outdebug = path.resolve(this._builddir, this._name + ".bmap");
+        }else if (toolkit.is64Tass) {
+            this._outdebug = path.resolve(this._builddir, this._name + ".lst");
         }
 
         this._outputs = [
@@ -180,11 +182,11 @@ class Project {
         if (!data.name) { throw("property 'name' is missing."); }
         this._name = data.name;
 
-        if (!data.toolkit) { throw("property 'toolkit' needs to be defined (either 'acme', 'kick', 'cc65', 'llvm' or 'basic')"); }
+        if (!data.toolkit) { throw("property 'toolkit' needs to be defined (either 'acme', 'kick', '64tass', 'cc65', 'llvm' or 'basic')"); }
         const toolkitId = data.toolkit.toLowerCase();
 
-        if (["acme", "kick", "cc65", "llvm", "basic"].indexOf(toolkitId) < 0) {
-            throw("property 'toolkit' needs to be either 'acme', 'kick', 'cc65', 'llvm' or 'basic'");
+        if (["acme", "kick", '64tass', "cc65", "llvm", "basic"].indexOf(toolkitId) < 0) {
+            throw("property 'toolkit' needs to be either 'acme', 'kick', '64tass', 'cc65', 'llvm' or 'basic'");
         }
 
         this._toolkit = Toolkit.fromName(toolkitId);
@@ -810,6 +812,13 @@ class Project {
                 this.getFileReferences(filename, dependencies);
             });
             depFiles.add(thisInstance.outfile, dependencies);
+        } else if (toolkit.isAcme) {
+                // generate one dependency list for all compilation units
+                const dependencies = asmFiles.clone();
+                asmFiles.forEach((filename) => {
+                    this.getFileReferences(filename, dependencies);
+                });
+                depFiles.add(thisInstance.outfile, dependencies);
         } else if (toolkit.isKick) {
             // generate one dependency list for all compilation units
             const dependencies = [];
@@ -1062,7 +1071,54 @@ class Project {
 
             script.push("build $target | $dbg_out : asm " + Ninja.join(buildTree.asm.array()))
             script.push("");
+        } else if (toolkit.is64Tass) {
 
+                script.push(Ninja.keyValue("asm_exe", (project.assembler || settings.tassExecutable)));
+                script.push("");
+    
+                let cpu = "6510";
+                if (project.machine) {
+                    cpu = (project.machine != "none") ? project.machine : null;
+                }
+    
+                // const flags = new NinjaArgs(
+                //    // "--msvc",
+                //     //"--maxerrors", "99"
+                // );
+    
+                // if (!releaseBuild) {
+                //     flags.add("-DDEBUG=1");
+                // }
+    
+                // flags.add(this._args);
+                // flags.add(this._assemblerFlags);
+    
+                // if (flags.indexOf("-f") == -1) flags.add("-f", "cbm");
+                // if (cpu && flags.indexOf("--cpu") == -1) flags.add("--cpu", cpu);
+    
+                //script.push(Ninja.keyArgs("flags", flags));
+                //script.push(Ninja.keyValueRaw("includes", includes.join("-I ")));
+                script.push("");
+    
+                script.push("rule res");
+                script.push("    command = $python_exe $rc_exe $rc_flags -o $out $in");
+                script.push("");
+    
+                script.push("rule asm");
+                script.push("    depfile = $out.d");
+                script.push("    deps = gcc");
+                script.push("    command = $asm_exe $flags $includes -l \"$dbg_out\" -o $out $in");
+                script.push("");
+    
+                buildTree.gen.forEach((to, from) => {
+                    script.push(Ninja.build(to, from, "res"));
+                });
+                script.push("");
+    
+                script.push("build $target | $dbg_out : asm " + Ninja.join(buildTree.asm.array()))
+                script.push("");
+    
+            
         } else if (toolkit.isCC65) {
 
             const flags = new NinjaArgs();

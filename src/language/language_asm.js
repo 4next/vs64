@@ -26,6 +26,21 @@ const AsmGrammar = {
         "by", "word", "wo"
     ],
 
+    tassAssemblerDirectives: [
+        "addr", "al", "align", "alignblk", "alignind", "alignpageind", "as", "assert", "autsiz", "bend", "binary", 
+        "binclude", "bfor", "block", "break", "breakif", "brept", "bwhile", "byte", "case", "cdef", "cerror", "char", 
+        "check", "comment", "continue", "continueif", "cpu", "cwarn", "databank", "default", "dint", "dpage", 
+        "dsection", "dstruct", "dunion", "dword", "edef", "elif", "else", "elsif", "enc", "encode", "end", "endblock", 
+        "endc", "endalignblk", "endcomment", "endencode", "endf", "endfor", "endfunction", "endif", "endlogical", 
+        "endm", "endmacro", "endn", "endnamespace", "endp", "endpage", "endproc", "endrept", "ends", "endsection", 
+        "endsegment", "endstruct", "endswitch", "endu", "endunion", "endv", "endvirtual", "endweak", "endwhile", 
+        "endwith", "eor", "error", "fi", "fill", "for", "from", "function", "goto", "here", "hidemac", "if", "ifeq", "ifmi", 
+        "ifne", "ifpl", "include", "lbl", "lint", "logical", "long", "macro", "mansiz", "namespace", "next", "null", 
+        "offs", "option", "page", "pend", "proc", "proff", "pron", "ptext", "rept", "rta", "section", "seed", "segment", 
+        "send", "sfunction", "shift", "shiftl", "showmac", "sint", "struct", "switch", "tdef", "text", "union", "var", 
+        "virtual", "warn", "weak", "while", "with", "word", "xl", "xs"
+    ],
+
     kickAssemblerDirectives: [
         "align", "assert", "asserterror", "break", "by", "byte", "const", "cpu", "define", "disk",
         "dw", "dword", "encoding", "enum", "error", "errorif", "eval", "file", "filemodify",
@@ -38,6 +53,8 @@ const AsmGrammar = {
     kickPreprocessorDirectives: [
         "define", "elif", "else", "endif", "if", "import", "importif", "importonce", "undef"
     ],
+
+   
 
     fuzzySearch: function(query) {
 
@@ -59,7 +76,16 @@ const AsmGrammar = {
                     items.push(token);
                 }
             }
-        } else if  (query.charCodeAt(0) == CharCode.NumberSign) {
+
+            for (let item of AsmGrammar.tassAssemblerDirectives) {
+                const token = "." + item;
+                if (token.startsWith(query)) {
+                    items.push(token);
+                }
+            }
+        } 
+        
+        else if  (query.charCodeAt(0) == CharCode.NumberSign) {
             for (let item of AsmGrammar.kickPreprocessorDirectives) {
                 const token = "#" + item;
                 if (token.startsWith(query)) {
@@ -95,6 +121,7 @@ class AsmParser extends ParserBase {
 
         let isKickAss = this.isKickAss;
         let isAcme = this.isAcme;
+        let is64Tass = this.is64Tass;
         let isLLVM = this.isLLVM;
 
         let tokensPerLineOfs = -1;
@@ -204,7 +231,7 @@ class AsmParser extends ParserBase {
 
             } else if (
                 (c == CharCode.Exclamation && isAcme) ||
-                (c == CharCode.Period && (isKickAss || isLLVM))) { // directive or macro
+                (c == CharCode.Period && (isKickAss || isLLVM || is64Tass))) { // directive or macro
 
                 const range = new Range(it.ofs, it.row, it.col);
                 range.inc(); it.next();
@@ -307,6 +334,7 @@ class AsmParser extends ParserBase {
 
         const isKickAss = this.isKickAss;
         const isAcme = this.isAcme;
+        const is64Tass = this.is64Tass;
         const isLLVM = this.isLLVM;
 
         const ofs = tokenOffset;
@@ -353,12 +381,16 @@ class AsmParser extends ParserBase {
                 } else if (macroCommand == ".const" && paramToken.type == TokenType.Identifier) {
                     statement = new Statement(StatementType.Definition, StatementType.ConstantDefinition, paramToken, tokens, ofs, count);
                 }
-            } else if (isLLVM) {
+            } else if (is64Tass) {
+                if (macroCommand == ".macro" && paramToken.type == TokenType.Identifier) {
+                    statement = new Statement(StatementType.Definition, StatementType.MacroDefinition, paramToken, tokens, ofs, count);
+                } 
+            }
+            else if (isLLVM) {
                 if (macroCommand == ".macro" && paramToken.type == TokenType.Identifier) {
                     statement = new Statement(StatementType.Definition, StatementType.MacroDefinition, paramToken, tokens, ofs, count);
                 }
             }
-
         }
 
         if (statement) {

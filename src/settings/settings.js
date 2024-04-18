@@ -190,6 +190,7 @@ class Settings {
         this.setupBasicCompiler(workspaceConfig);
         this.setupNinja(workspaceConfig);
         this.setupAcme(workspaceConfig);
+        this.setup64Tass(workspaceConfig);
         this.setupKickAssembler(workspaceConfig);
         this.setupCC65(workspaceConfig);
         this.setupLLVM(workspaceConfig);
@@ -252,6 +253,15 @@ class Settings {
             this.acmeExecutable = path.resolve(installDir, Utils.normalizeExecutableName("acme"));
         } else {
             this.acmeExecutable = "acme";
+        }
+    }
+
+    setup64Tass(workspaceConfig) {
+        const installDir = this.#getAbsDir(workspaceConfig.get("vs64.TassInstallDir"));
+        if (installDir) {
+            this.tassExecutable = path.resolve(installDir, Utils.normalizeExecutableName("64tass"));
+        } else {
+            this.tassExecutable = "64tass";
         }
     }
 
@@ -424,6 +434,7 @@ class Settings {
         logger.debug("clang++ executable: " + settings.clangExecutable);
         logger.debug("clang executable: " + settings.clangcExecutable);
         logger.debug("acme executable: " + settings.acmeExecutable);
+        logger.debug("64tass executable: " + settings.tassExecutable);
         logger.debug("kickass executable: " + settings.kickExecutable);
         logger.debug("cc65 executable: " + settings.cc65Executable);
         logger.debug("ca65 executable: " + settings.ca65Executable);

@@ -397,6 +397,10 @@ class ParserBase {
         return (this._options && this._options.toolkit && this._options.toolkit.isBasic);
     }
 
+    get is64Tass() {
+        return (this._options && this._options.toolkit && this._options.toolkit.is64Tass);
+    }
+
     parse(src, filename, options) {
         this._options = options;
         this._ast = new AbstractSyntaxTree(filename);

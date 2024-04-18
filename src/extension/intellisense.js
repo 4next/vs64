@@ -74,6 +74,8 @@ class IntellisenseConfigurationProvider {
             compilerPath = settings.acmeExecutable;
         } else if (toolkit.isKick) {
             compilerPath = settings.kickExecutable;
+        }else if (toolkit.is64Tass) {
+            compilerPath = settings.tassExecutable;
         }
 
         return compilerPath;
